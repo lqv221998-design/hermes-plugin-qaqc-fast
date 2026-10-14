@@ -7,7 +7,7 @@ platforms: [windows]
 ---
 # QAQC Fast — thiết lập độc lập
 
-Bản RC có code/fixture proof, không là nghiệm thu mọi website/role. Load `hermes-agent` và `hermes-desktop-plugins` trước cài hoặc cấu hình. Dùng public CLI của bản đang chạy; không chèn package vào managed venv bằng pip và không dùng CLI dispatch để vượt approval.
+Bản RC có code/fixture proof, không là nghiệm thu mọi website/role. Hướng dẫn này và START-HERE-HERMES.md tự chứa, không yêu cầu thư viện skills riêng của tác giả. Nếu có skill hermes-agent phù hợp thì nạp thêm; đối chiếu tài liệu chính thức Hermes trước cấu hình. Dùng public CLI của bản đang chạy; không chèn package vào managed venv bằng pip và không dùng CLI dispatch để vượt approval.
 
 1. Xác minh OS, Hermes home/profile, bản cài và nguồn. Máy người nhận dùng Chrome/profile/tài khoản của chính họ, không copy endpoint, cookie, cấu hình, state hay chấp thuận tác giả.
 2. Đọc START-HERE-HERMES.md tại repo root (từ thư mục skill đi ../../). Native Desktop: Capabilities → Plugins → Install plugin → Repository → URL → Review repository; repo root chứa Agent plugin, không #subdir/Desktop pane. CLI đã kiểm: hermes plugins install <URL> --no-enable, pin actual full 40-hex SHA bằng --ref nếu cần, enable riêng --no-allow-tool-override. Không force overwrite. Mọi provisioning/config/browser grant riêng; không tự sửa trust/profile từ repo.

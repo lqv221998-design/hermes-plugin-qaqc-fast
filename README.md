@@ -1,6 +1,10 @@
 # QAQC Fast 0.2.0-rc.1 — hybrid candidate, chưa full-site acceptance
 
 ## Cài trực tiếp từ GitHub trên Hermes khác
+Repository: https://github.com/lqv221998-design/hermes-plugin-qaqc-fast
+
+CLI: `hermes plugins install https://github.com/lqv221998-design/hermes-plugin-qaqc-fast --no-enable`.
+
 **Đọc [START-HERE-HERMES.md](START-HERE-HERMES.md)**: hướng dẫn native Desktop/CLI, điều kiện cần và các phép kiểm đủ cho từng phạm vi. Repo có Agent plugin ở gốc, không cần #subdir; không có Desktop pane. Skills setup và operations tự đi cùng plugin. Public GitHub chỉ cung cấp code, không browser/login/QAQC permissions.
 
 Đọc `qaqc-fast:setup`/SETUP.md và skill operations mới. RC sửa readiness theo bằng chứng, artifact lossless bỏ cap 100/250/100, subtree iframe, selected discipline và thêm benchmark handler. Có generic verified context/query/all-pages/detail/docs/OCR/vision, owned TEST write/workflow/transfer, Computer Use và recovery/checkpoint. Fixtures là code proof, không là live TEST/mọi role acceptance. Benchmark handler không gồm model/chat hay baseline, chưa kết luận nhanh hơn.
