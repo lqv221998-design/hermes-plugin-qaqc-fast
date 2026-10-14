@@ -1,0 +1,21 @@
+name: Plugin contract tests
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows-unit-contracts:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install test requirements in disposable runner
+        run: python -m pip install "openpyxl==3.1.5" "pypdf>=6,<7" "Pillow>=11,<13"
+      - name: Run synthetic contracts
+        run: python -B -m unittest discover -s tests -v
+# Explicit local MinerU integration is skipped without QAQC_MINERU_TEST_URL.
+# No authenticated QAQC, native GUI, recipient installation or speed claim.

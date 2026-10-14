@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.env.*
+config.yaml
+auth.json
+state.db*
+artifacts/
+backups/
+browser-profiles/
+*.log

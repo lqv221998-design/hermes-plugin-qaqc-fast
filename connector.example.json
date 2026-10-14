@@ -1,0 +1,47 @@
+{
+  "mcp_servers": {
+    "chrome_qaqc": {
+      "command": "REPLACE_WITH_YOUR_NODE_EXECUTABLE",
+      "args": [
+        "REPLACE_WITH_YOUR_CHROME_DEVTOOLS_MCP_1_10_1_ENTRYPOINT",
+        "--browserUrl=REPLACE_WITH_YOUR_LOOPBACK_CHROME_ENDPOINT",
+        "--no-usage-statistics",
+        "--no-performance-crux",
+        "--categoryExtensions=false",
+        "--categoryEmulation=false",
+        "--categoryPerformance=false",
+        "--categoryNetwork=false",
+        "--categoryMemory=false",
+        "--no-javascript-evaluation"
+      ],
+      "enabled": false,
+      "trust": "untrusted",
+      "timeout": 15,
+      "connect_timeout": 30,
+      "lazy": false,
+      "supports_parallel_tool_calls": false,
+      "tools": {
+        "include": ["list_pages", "take_snapshot", "click", "wait_for", "fill_form", "upload_file", "navigate_page"],
+        "resources": false,
+        "prompts": false
+      },
+      "sampling": {"enabled": false},
+      "elicitation": {"enabled": false}
+    }
+  },
+  "plugins": {
+    "entries": {
+      "qaqc-fast": {
+        "mcp_allowlist": ["chrome_qaqc"],
+        "settings": {
+          "mcp_server": "chrome_qaqc",
+          "expected_user_display_name": "",
+          "write_project": "",
+          "workflow_transitions": [],
+          "allow_restore_browser": false,
+          "mineru_url": ""
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,56 @@
+name: qaqc-fast
+version: 0.2.0-rc.1
+description: QAQC verified hybrid executor with lossless reads, scoped test-record writes and native Computer Use.
+author: vu.lequang, Hermes Agent
+license: MIT
+provides_tools:
+  - qaqc_fast_session
+provides_hooks:
+  - pre_tool_call
+  - pre_llm_call
+python_dependencies: ["openpyxl==3.1.5", "pypdf>=6,<7", "Pillow>=11,<13"]
+capabilities: []
+config_schema:
+  mcp_server:
+    type: str
+    default: chrome_qaqc
+    choices: [chrome_qaqc]
+    description: Dedicated QAQC native MCP key; requires operator mcp_allowlist. DMS keys are rejected.
+  expected_user_display_name:
+    type: str
+    default: ""
+    required: true
+    label: Your QAQC displayed user name
+    description: Configure locally for this recipient and their own browser. Empty blocks browser access; mismatch stops. Display names are not unique principal IDs or ACL grants.
+  write_project:
+    type: str
+    default: ""
+    description: Explicit authorized TEST project. Empty disables all record writes; only plugin-owned QAQC-PLUGIN-TEST records may be changed.
+  workflow_transitions:
+    type: list
+    default: []
+    description: Separate explicit grants for send/approve/reject/close. Creation permission never grants these transitions.
+  settle_seconds:
+    type: float
+    default: 0.25
+    description: Bounded delay between readiness snapshots, not a load-completion proof by itself.
+  mineru_url:
+    type: str
+    default: ""
+    description: Explicit local MinerU HTTP binding; empty disables OCR. No OCR fallback.
+  allow_restore_browser:
+    type: bool
+    default: false
+    description: Explicit controlled browser restoration grant; listener recovery is not business acceptance.
+  browser_executable:
+    type: str
+    default: ""
+    description: Exact locally approved Chrome executable, never copied from the author.
+  browser_profile:
+    type: str
+    default: ""
+    description: Exact locally owned Chrome user-data directory; never clone profiles or credentials.
+  debug_port:
+    type: int
+    default: 0
+    description: Exact locally verified loopback QAQC debugging port; zero disables lifecycle probing.
