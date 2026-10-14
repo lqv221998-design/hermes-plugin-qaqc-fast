@@ -1,7 +1,10 @@
-# Bắt đầu trên Hermes máy nhận — QAQC Fast 0.2.0-rc.1
+# Bắt đầu trên Hermes máy nhận — QAQC Fast 0.2.0-rc.2
+
+## Dành cho Hermes chưa biết plugin này
+Nhiệm vụ: mở/đọc đúng QAQC, nhật ký/hồ sơ/ảnh/rủi ro; thao tác ghi chỉ TEST mới do plugin sở hữu được grant. Không cần session, skill library hay browser tác giả. Nạp **qaqc-fast:tasks** để chọn action; xem [request examples](skills/tasks/references/examples.md), [recipe diary](skills/tasks/references/construction-diary.md). capabilities → prepare trước browser. Skills file có trên đĩa không chứng minh runtime đã đăng ký; kiểm qualified names/version/actions. Bản này đăng ký model-facing schema/context hook và frozen prompt section nếu host hỗ trợ để hướng dẫn discovery, không chèn lại lịch sử.
 
 ## Link GitHub cài cái gì?
-Repo có `plugin.yaml` + `__init__.py` ở **gốc**, nên native Hermes dùng URL repo trực tiếp, không `#subdir`. Đây là **Agent plugin**, không có Desktop pane: Review repository phải nhận Agent; không hứa Agent + Desktop UI như plugin Cognee tham chiếu. Enable đăng ký tool `qaqc_fast_session` và skills `qaqc-fast:setup`, `qaqc-fast:operations`.
+Repo có `plugin.yaml` + `__init__.py` ở **gốc**, nên native Hermes dùng URL repo trực tiếp, không `#subdir`. Đây là **Agent plugin**, không có Desktop pane: Review repository phải nhận Agent; không hứa Agent + Desktop UI như plugin Cognee tham chiếu. Enable đăng ký tool `qaqc_fast_session` và skills `qaqc-fast:setup`, `qaqc-fast:operations`, `qaqc-fast:tasks`.
 
 Cài code từ Public GitHub không cần tài khoản GitHub của tác giả. **Không phải kết nối vào máy tác giả hoặc tự có phiên QAQC.** Mỗi máy giữ browser/profile/login/quyền/consent của chính mình. Chưa nghiệm thu mọi OS/role/UI; đây là prerelease, không tự nâng cấp khi clone.
 
@@ -31,7 +34,7 @@ Sau cài, nạp `qaqc-fast:setup` để Hermes trên máy đó khảo sát và h
 1. **Consent từng bước:** provisioning dependencies, tạo/cấu hình connector, plugin mcp_allowlist, enablement và gắn browser. Link repo/cài code không là tất cả các consent đó.
 2. Chrome riêng của người nhận. Người nhận tự login QAQC; không copy cookie/profile/token/password/OTP hoặc source account của tác giả. Login/SSO/2FA/permission do người nhận xử lý; secret chỉ qua vault hỗ trợ đúng origin hoặc nhập thủ công, không qua plugin/chat.
 3. Native MCP key **chrome_qaqc**, settings.mcp_server và plugin mcp_allowlist phải khớp đúng key. Dùng native `mcp_servers` của Hermes, không shape `mcpServers` vendor. Mẫu [connector.example.json](connector.example.json) là **DATA**, enabled=false, trust=untrusted, binding trống. Không áp cả file để thay config hiện có.
-4. Tools include đúng **list_pages,take_snapshot,click,wait_for,fill_form,upload_file,navigate_page**. Tắt resources/prompts/sampling/elicitation, usage statistics/CrUX/JavaScript evaluation và category không cần. Giữ DMS/connector khác nguyên trạng. Nếu filesystem guard cần roots, chỉ grant thư mục artifacts của plugin/selected file scope trên host thực, không --allowUnrestrictedPaths.
+4. Tools include **list_pages,take_snapshot,click,wait_for,fill_form,upload_file,navigate_page**, thêm **new_page** sau consent tạo tab. Cần allow_open_page=true và allow_new_tab=true khi người dùng chọn mode new; hai flags mặc định false, không tự bật khi install. Tắt resources/prompts/sampling/elicitation, usage statistics/CrUX/JavaScript evaluation và category không cần. Giữ DMS/connector khác nguyên trạng. Nếu filesystem guard cần roots, chỉ grant thư mục artifacts của plugin/selected file scope trên host thực, không --allowUnrestrictedPaths.
 5. Tạo endpoint Chrome local của người nhận theo docs Chrome/Hermes; không dùng port/path của tác giả. Browser restore cần own executable/profile/debug_port được chọn, grant riêng; không tự đóng/restart Chrome để giải quyết quyền.
 6. Cấu hình bằng native UI/public `hermes config set`, không thay toàn YAML. `expected_user_display_name` phải do người nhận xác nhận trên UI, mặc định trống phải block. Tên hiển thị không là unique principal; **backend QAQC ACL** là thẩm quyền.
 7. Đúng dự án nguyên văn ở **header** cho mỗi call, không menuId/card/current project fallback. Nếu cần bộ môn, expected_discipline phải có selected/checked/pressed=true được quan sát, không label-only.
@@ -40,7 +43,7 @@ Sau cài, nạp `qaqc-fast:setup` để Hermes trên máy đó khảo sát và h
 
 ## Điều kiện đủ — chỉ cho phạm vi đã nghiệm thu
 Cài + Doctor + MCP handshake **chưa đủ**. Để gọi kết nối đọc dùng được, cần **đồng thời**:
-- Backend/profile/tool/skills mới thực sự nạp: mở chat mới, capabilities báo **0.2.0-rc.1** và expanded verbs; không sửa prompt/toolset chat cũ để né cache.
+- Backend/profile/tool/skills mới thực sự nạp: mở chat mới, capabilities báo **0.2.0-rc.2**, prepare/open_page/open_page_status và expanded verbs; không sửa prompt/toolset chat cũ để né cache.
 - pages quan sát page ID → inspect exact requested project kiểm nguồn/account/header → read_view/read_list kiểm discipline nếu yêu cầu, readiness/data counts/artifact thật. No rows/heading/ok=true không là loaded/empty/full inventory.
 - Người nhận được QAQC cho truy cập module và UI phù hợp. Khác/thiếu control/template/permission giữ pending; code generic không chứng minh mọi UI.
 
@@ -55,6 +58,8 @@ Cài + Doctor + MCP handshake **chưa đủ**. Để gọi kết nối đọc d�
 **Không có bộ điều kiện cấu hình nào đủ bảo đảm “mọi chức năng trên mọi Hermes/QAQC UI”.** Phải nghiệm thu trên máy/role/nguồn được chọn. Các checks chỉ đủ cho phạm vi và thời điểm được kiểm.
 
 ## Tuỳ chọn không bắt buộc cho đọc cơ bản
+Mở trang/tab: open_page nhận đúng URL được chọn, mode new/reuse và operation_id; deep route cần exact requested project, không inferred ID. new_page mở background, không spawn/login Chrome; reuse không đè tab origin khác và kiểm source project trước. Root chỉ bootstrap/new, vẫn phải có binding, chưa business/account/project verified. pages liệt kê bootstrap_pages riêng. Không biết kết quả/login/transport pending → open_page_status chỉ đọc cùng attempt sau yêu cầu đối soát phù hợp; không reset/retry/mint ID mới. Mở URL đúng chưa là readiness hoặc quyền ghi production. Ba module là legacy recipes, không toàn bộ RC scope.
+
 - Computer Use: host-supported dispatcher/session/approval + cua-driver hoạt động trên interactive desktop. Chỉ dùng trong executor; không fallback sau refusal. `hermes computer-use doctor` kiểm health, không chứng minh click tới control.
 - Vision: model/route do recipient chọn hỗ trợ ảnh; nội dung chọn có thể được xử lý bởi provider đó. Không hứa zero egress.
 - OCR: MinerU local endpoint explicit, OpenAPI/format thực tế được kiểm; mặc định trống, không OCR fallback. Không ship service/binary/model của tác giả. Kết quả unreviewed/non-normative.

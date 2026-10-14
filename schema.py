@@ -2,13 +2,15 @@
 from .hybrid import ACTIONS
 
 LEGACY_ACTIONS = ['capabilities','pages','inspect','open_module','read_list']
-WRITE_ACTIONS = {'write_record','upload_attachment','transition_record','delete_record','native_step','begin_transfer','restore_browser','ocr_document','analyze_image'}
+WRITE_ACTIONS = {'open_page','write_record','upload_attachment','transition_record','delete_record','native_step','begin_transfer','restore_browser','ocr_document','analyze_image'}
 
 
 def properties(modules):
     text = lambda maximum=250: {'type':'string','minLength':1,'maxLength':maximum}
     fields = {'type':'object','minProperties':1,'maxProperties':80,'additionalProperties':{'type':'string','maxLength':20000}}
-    result = {'action':{'type':'string','enum':list(dict.fromkeys(LEGACY_ACTIONS+ACTIONS))},
+    result = {'action':{'type':'string','enum':list(dict.fromkeys(LEGACY_ACTIONS+['prepare','open_page','open_page_status']+ACTIONS))},
+              'url':{**text(4096),'description':'Exact user-selected HTTPS QAQC URL; never rewrite route parameters or infer project.'},
+              'mode':{'type':'string','enum':['new','reuse']},
               'page_id':{'type':'integer','minimum':0,'description':'Observed native QAQC page ID, never assume 1.'},
               'expected_project':{**text(200),'description':'Exact requested header project. No silent fallback.'},
               'expected_discipline':{'type':'string','enum':['XÂY DỰNG','CƠ ĐIỆN']},

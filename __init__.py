@@ -221,14 +221,16 @@ def run(ctx, args):
             text = envelope.get('result')
             if not isinstance(text,str):
                 raise Stop('unsupported_page_listing')
-            pages = []
+            pages, bootstrap_pages = [], []
             for pid,url in re.findall(r'^(\d+): .*?\((https://[^\s)]+)\)',text,re.MULTILINE):
                 try:
                     source_url(url)
                 except Stop:
+                    if url=='https://qaqc.newtecons.vn/':
+                        bootstrap_pages.append({'page_id':int(pid),'url':url})
                     continue
                 pages.append({'page_id':int(pid),'url':url})
-            return {'ok':True,'pages':pages,'project_verified':False,'mcp_calls':calls,
+            return {'ok':True,'pages':pages,'bootstrap_pages':bootstrap_pages,'project_verified':False,'mcp_calls':calls,
                     'instruction':'Select one observed page ID and supply the user-requested exact project; pages does not verify project.'}
         if action not in ('inspect','open_module','read_list') or type(args.get('page_id')) is not int or args['page_id'] < 0:
             raise Stop('invalid_input')
@@ -314,21 +316,32 @@ from .documents import read_document_file
 from .mineru import mineru_parse_file
 from .recovery import recover_owned_browser
 from .schema import LEGACY_ACTIONS, WRITE_ACTIONS, properties
+from .onboarding import VERSION, START_CONTEXT, prepare, guidance
+from .page_open import OPEN_ACTIONS, run_open
 
 def register(ctx):
     def handler(args, **kwargs):
         from .hybrid import ACTIONS
-        if isinstance(args,dict) and args.get('action') in ACTIONS:
+        if isinstance(args,dict) and args.get('action')=='prepare':
+            try:
+                result = prepare(ctx,args)
+            except Stop as exc:
+                result = {'ok':False,'status':exc.status,'mcp_calls':0,'retried':False}
+        elif isinstance(args,dict) and args.get('action') in OPEN_ACTIONS:
+            result = run_open(ctx,args,**kwargs)
+        elif isinstance(args,dict) and args.get('action') in ACTIONS:
             result = run_extended(ctx,args,**kwargs)
         else:
             result = run(ctx,args)
             if isinstance(args,dict) and args.get('action')=='capabilities' and result.get('ok'):
                 from .hybrid import ACTIONS
-                result.update(version='0.2.0-rc.1',actions=list(dict.fromkeys(LEGACY_ACTIONS+ACTIONS)),
+                result.update(version=VERSION,actions=list(dict.fromkeys(LEGACY_ACTIONS+['prepare']+OPEN_ACTIONS+ACTIONS)),
                               setup_skill='qaqc-fast:setup',
                               limits=['current-page read is not whole inventory','foreign frames/source revision unverified','native capture requires visual review','display-name guard is not unique-principal authentication','live TEST acceptance and model/chat benchmark pending'],
                               scope='Verified read navigation + operator-scoped owned test-record writes + native Computer Use handoff',
                               acceptance='Expanded verbs have fixture proof; live business acceptance must be measured separately.')
+        if result.get('ok') is False:
+            result['guidance'] = guidance(result.get('status'),result.get('mcp_calls',0))
         return json.dumps(result,ensure_ascii=False)
 
     def guard(**kwargs):
@@ -351,19 +364,26 @@ def register(ctx):
                     if isinstance(child,dict):
                         collect(child.get('name',child.get('recipient_name','')).split('.')[-1],child.get('arguments',child.get('parameters',{})))
         collect(kwargs.get('tool_name',''),kwargs.get('args',{}))
+        if any(r.get('action')=='open_page' for r in requests):
+            return {'action':'approve','message':'Confirm opening the exact user-selected QAQC page/tab. Keep the recipient browser/account, no foreground focus or record writes; uncertain opens must not be replayed.'}
         if any(r.get('action') in WRITE_ACTIONS for r in requests):
             return {'action':'approve','message':'Confirm the scoped QAQC operation. Only plugin-owned QAQC-PLUGIN-TEST records are writable in the configured TEST project; send/approve/reject/close require a separate grant. Native foreground has its own approval. Do not replay an uncertain write/transfer.'}
         return None
 
     ctx.register_tool(name='qaqc_fast_session',toolset='qaqc_fast',handler=handler,
         schema={'name':'qaqc_fast_session',
-                'description':'QAQC verified hybrid executor. Load qaqc-fast:operations. Exact project/account checks, selected discipline, live-menu navigation, filters, lossless read_view, reconciled read_all, identity-bound details, local document readers, owned test-record create/edit/upload/workflow, export verification and scoped Computer Use. Approvals retained; pending/partial is not completion. New writes only in explicitly configured TEST scope.',
+                'description':START_CONTEXT,
                 'parameters':{'type':'object','additionalProperties':False,'required':['action'],
                               'properties':properties(MODULES)}},
-        description='QAQC bounded verified read navigation',emoji='🔎')
+        description='QAQC: mở trang, đọc nhật ký/hồ sơ/ảnh, kiểm prerequisite và thao tác TEST có xác minh.',emoji='🔎')
     ctx.register_hook('pre_tool_call',guard)
-    ctx.register_hook('pre_llm_call',lambda **kwargs: {'context':'For QAQC load qaqc-fast:operations and use qaqc_fast_session only. Read_view persists lossless current-page data; read_all completeness needs explicit readiness, identity and total reconciliation. Native input requires scoped reviewed handoff and host approval. Writes only to plugin-owned test records; workflow grants are separate. Pending or uncertain effects must never be replayed or claimed complete.'})
+    ctx.register_hook('pre_llm_call',lambda **kwargs: {'context':START_CONTEXT})
+    section = getattr(ctx,'register_system_prompt_section',None)
+    if callable(section):
+        section('qaqc-fast.onboarding',START_CONTEXT,max_chars=2000)
     ctx.register_skill('operations',Path(__file__).parent/'skills'/'operations'/'SKILL.md',
                        description='Use when reading QAQC with qaqc-fast. Verify project and scope.')
     ctx.register_skill('setup',Path(__file__).parent/'skills'/'setup'/'SKILL.md',
                        description='Use when setting up QAQC Fast. Keep recipient permissions independent.')
+    ctx.register_skill('tasks',Path(__file__).parent/'skills'/'tasks'/'SKILL.md',
+                       description='Use when asked to open QAQC links/tabs or read nhật ký/hồ sơ/ảnh. Map intent to verified actions.')

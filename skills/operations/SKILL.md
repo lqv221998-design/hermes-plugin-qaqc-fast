@@ -1,7 +1,7 @@
 ---
 name: operations
 description: Use when operating QAQC. Verify project, discipline and effects.
-version: 0.2.0-rc.1
+version: 0.2.0-rc.2
 license: MIT
 platforms: [windows]
 metadata:
@@ -19,8 +19,12 @@ Bind each recipient separately: use their own Windows/Hermes profile, visible Ch
 This package is self-contained. Read the bundled `references/module-guide.md` for module meaning and coverage. If installed, `qaqc-business-map` and `qaqc-site-map` can supply additional approved organizational context; they are optional, not installation requirements. Obtain this user's exact target project. Never substitute the current project, a research project or a URL segment: `503` is a menuId, not a project identity. No particular account or project is the package default.
 
 ## Tool flow
+Start with `qaqc-fast:tasks` for purpose/request routing and runnable examples. `capabilities` must match this version; `prepare` reports local missing binding/specs without MCP. Do not diagnose unsupported destinations from a prerequisite block. Three legacy recipes are not all RC actions. Reading a workflow/settings page is not a send/approve action.
+
+`open_page` accepts an exact user-selected QAQC URL with mode new/reuse, operation_id and exact requested project for business routes. Separate allow_open_page/allow_new_tab and host approval are required; native new_page must be included only after recipient consent. New tabs are background and identified uniquely; reuse verifies source/account/project before navigate and dismisses beforeunload rather than accepting data loss. No browser launcher, profile copy or arbitrary-domain URL. Optional destination_heading must be actually known, not invented. Exact root may be opened only in new mode as bootstrap; user/project/business remain unverified. Binding is still required before browser calls. `open_page_status` observes an owned attempt only, never reopens/navigates. Resolve login/unknown effects under the same ledger; no new ID to replay. A successfully opened URL/account/project does not establish data readiness.
+
 1. `capabilities` returns supported actions/modules without browser access.
-2. `pages` discovers only supported QAQC page IDs. It does **not** verify project or authenticate. Never assume page 1. Multiple pages require selecting the relevant observed source.
+2. `pages` discovers supported QAQC page IDs and separate bootstrap_pages for the exact root. It does **not** open Chrome, verify project or authenticate. Never assume page 1. Multiple pages require selecting the relevant observed source.
 3. `inspect` needs `page_id` + `expected_project`. It checks the header signature, not arbitrary project names in cards/rows.
 4. `open_module` or `read_list` needs these fields + `module`: `work_acceptance`, `photos`, `quality_risks`. One executor call batches a bounded live-menu walk; after every click it rechecks source/project. A destination requires the live route and exact business heading. No arbitrary UID/URL/label input is accepted.
 5. Public `read_list` and `read_view` persist all observed current-page rows/text/links to a hashed artifact; no 100/250/100 slicing. Native snapshot file budget 8 MiB fails closed, never silently clips. Non-semantic DOM stays unstructured, not invented records. Readiness requires stable snapshots plus explicit data/completion/empty/counter and no busy/loading/contradiction; false is pending, not a zero-record proof. Exclude only iframe subtree, keeping later top-page siblings. Current page is not whole inventory, SharePoint link not workbook content.
@@ -48,7 +52,7 @@ native_capture exact pid/window after source verification; review image active U
 diagnose only probes selected loopback port, not business/login. restore_browser needs explicit grant and exact owner executable/profile/port, no profile copying or connector switch. benchmark uses equal two-fresh-snapshot samples, p50/p95/min/max/readiness/output hashes. It excludes preflight/model/chat and has no baseline by default: not end-to-end acceptance. Need caller/model/UI timings, equivalent baseline and output reconciliation before claiming faster/stable site-wide.
 
 ## Runtime ownership
-The active profile grants only `chrome_qaqc` to this plugin. Native include is list_pages/take_snapshot/click/wait_for/fill_form/upload_file/navigate_page. DMS remains unchanged. Runtime artifacts/state stay private, outside install tree. Keep endpoints, paths, cookies and live records out of portable packages; recipient owns browser/account. RC fixtures/Doctor do not prove all roles/full site or live TEST acceptance.
+The active profile grants only `chrome_qaqc` to this plugin. Native include is list_pages/take_snapshot/click/wait_for/fill_form/upload_file/navigate_page, plus new_page only when the recipient grants new-tab use. DMS remains unchanged. Runtime artifacts/state stay private, outside install tree. Keep endpoints, paths, cookies and live records out of portable packages; recipient owns browser/account. RC fixtures/Doctor do not prove all roles/full site or live TEST acceptance.
 Trust/allowlist consent from one operator applies only to that operator's local profile, never to all recipients. Each installation must make its own grant. Do not share one credential-bearing Chrome connection between people; use isolated OS/Hermes/browser profiles. This desktop plugin does not authenticate users of a shared multi-user service or elevate/copy QAQC roles.
 
 Install/enable is not proof the present chat reloaded tools. Open a new chat after activation; verify skill discovery, capabilities, pages and an actual inspect before using it. Do not profile-wide reload/restart DMS solely to activate QAQC.

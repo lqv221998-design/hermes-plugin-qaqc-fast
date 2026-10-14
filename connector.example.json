@@ -21,7 +21,7 @@
       "lazy": false,
       "supports_parallel_tool_calls": false,
       "tools": {
-        "include": ["list_pages", "take_snapshot", "click", "wait_for", "fill_form", "upload_file", "navigate_page"],
+        "include": ["list_pages", "take_snapshot", "click", "wait_for", "fill_form", "upload_file", "navigate_page", "new_page"],
         "resources": false,
         "prompts": false
       },
@@ -35,6 +35,8 @@
         "mcp_allowlist": ["chrome_qaqc"],
         "settings": {
           "mcp_server": "chrome_qaqc",
+          "allow_open_page": false,
+          "allow_new_tab": false,
           "expected_user_display_name": "",
           "write_project": "",
           "workflow_transitions": [],

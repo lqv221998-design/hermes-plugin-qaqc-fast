@@ -1,6 +1,6 @@
 name: qaqc-fast
-version: 0.2.0-rc.1
-description: QAQC verified hybrid executor with lossless reads, scoped test-record writes and native Computer Use.
+version: 0.2.0-rc.2
+description: QAQC recipient onboarding, explicit URL/tab opening, diary and document reads, scoped TEST writes with verified effects.
 author: vu.lequang, Hermes Agent
 license: MIT
 provides_tools:
@@ -11,6 +11,14 @@ provides_hooks:
 python_dependencies: ["openpyxl==3.1.5", "pypdf>=6,<7", "Pillow>=11,<13"]
 capabilities: []
 config_schema:
+  allow_open_page:
+    type: bool
+    default: false
+    description: Separate recipient consent to navigate a selected QAQC URL. Does not grant login, ACL, record writes or arbitrary websites.
+  allow_new_tab:
+    type: bool
+    default: false
+    description: Separate permission to create a background QAQC tab through native new_page. Requires the recipient MCP include gate.
   mcp_server:
     type: str
     default: chrome_qaqc
