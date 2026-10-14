@@ -6,6 +6,8 @@ Repo có `plugin.yaml` + `__init__.py` ở **gốc**, nên native Hermes dùng U
 Cài code từ Public GitHub không cần tài khoản GitHub của tác giả. **Không phải kết nối vào máy tác giả hoặc tự có phiên QAQC.** Mỗi máy giữ browser/profile/login/quyền/consent của chính mình. Chưa nghiệm thu mọi OS/role/UI; đây là prerelease, không tự nâng cấp khi clone.
 
 ## Cách cài native
+**Kết quả kiểm Windows:** source clone public khớp đủ bytes, tests/Doctor/validator đạt; nhưng hai native CLI installs thử độc lập gặp WinError 5 ở staged publish/rename. Vì vậy flow bên dưới là workflow được hỗ trợ, **chưa là proof cài thành công cả plugin trên máy này/mọi máy**. Lỗi không tự chứng minh repo sai hoặc login thiếu; nguyên nhân chưa xác định. Không force overwrite, copy để che native failure, thay registry/core hoặc đổi credentials. Giữ log/state, xử lý host/PM gate qua workflow chính thức rồi nghiệm thu lại. Desktop physical UI/second-machine acceptance còn pending.
+
 ### Hermes Desktop
 Capabilities → Plugins → Install plugin → Repository → dán URL repo → Review repository. Kiểm tên `qaqc-fast`, Agent component, exact source/commit, backend/profile đích và dependencies. Xác nhận cài/enable riêng theo UI; cài code không tự cấu hình MCP. Không Force reinstall lên bản đang làm việc.
 

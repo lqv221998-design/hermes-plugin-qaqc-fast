@@ -5,6 +5,8 @@ Repository: https://github.com/lqv221998-design/hermes-plugin-qaqc-fast
 
 CLI: `hermes plugins install https://github.com/lqv221998-design/hermes-plugin-qaqc-fast --no-enable`.
 
+**Host gate đã tái hiện:** native Agent installer trong hai Hermes home Windows thử riêng clone đúng repo nhưng thất bại với **WinError 5 / Access is denied** ở bước publish/rename staged plugin. Anonymous clone/byte verification, tests và Doctor/validator đạt không thay thế install PASS. Nguyên nhân host/PM chưa được xác định; không force/manual-copy/sửa core để gọi native install đạt. Physical máy nhận và Desktop UI review/install còn phải kiểm riêng. Nếu gặp lỗi này, giữ log/state và báo pending; không coi cài code đã hoàn tất.
+
 **Đọc [START-HERE-HERMES.md](START-HERE-HERMES.md)**: hướng dẫn native Desktop/CLI, điều kiện cần và các phép kiểm đủ cho từng phạm vi. Repo có Agent plugin ở gốc, không cần #subdir; không có Desktop pane. Skills setup và operations tự đi cùng plugin. Public GitHub chỉ cung cấp code, không browser/login/QAQC permissions.
 
 Đọc `qaqc-fast:setup`/SETUP.md và skill operations mới. RC sửa readiness theo bằng chứng, artifact lossless bỏ cap 100/250/100, subtree iframe, selected discipline và thêm benchmark handler. Có generic verified context/query/all-pages/detail/docs/OCR/vision, owned TEST write/workflow/transfer, Computer Use và recovery/checkpoint. Fixtures là code proof, không là live TEST/mọi role acceptance. Benchmark handler không gồm model/chat hay baseline, chưa kết luận nhanh hơn.

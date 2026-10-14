@@ -9,6 +9,8 @@ platforms: [windows]
 
 Bản RC có code/fixture proof, không là nghiệm thu mọi website/role. Hướng dẫn này và START-HERE-HERMES.md tự chứa, không yêu cầu thư viện skills riêng của tác giả. Nếu có skill hermes-agent phù hợp thì nạp thêm; đối chiếu tài liệu chính thức Hermes trước cấu hình. Dùng public CLI của bản đang chạy; không chèn package vào managed venv bằng pip và không dùng CLI dispatch để vượt approval.
 
+Hai native Windows CLI installs thử riêng đã clone đúng source nhưng gặp WinError 5 khi publish/rename staged tree. Nguyên nhân host/PM chưa xác định; tests/Doctor/probe không là install PASS. Giữ error/state và pending host gate; không force/manual-copy/sửa core hoặc registry để giả nghiệm thu. Native Desktop physical review/install và máy nhận khác vẫn kiểm riêng.
+
 1. Xác minh OS, Hermes home/profile, bản cài và nguồn. Máy người nhận dùng Chrome/profile/tài khoản của chính họ, không copy endpoint, cookie, cấu hình, state hay chấp thuận tác giả.
 2. Đọc START-HERE-HERMES.md tại repo root (từ thư mục skill đi ../../). Native Desktop: Capabilities → Plugins → Install plugin → Repository → URL → Review repository; repo root chứa Agent plugin, không #subdir/Desktop pane. CLI đã kiểm: hermes plugins install <URL> --no-enable, pin actual full 40-hex SHA bằng --ref nếu cần, enable riêng --no-allow-tool-override. Không force overwrite. Mọi provisioning/config/browser grant riêng; không tự sửa trust/profile từ repo.
 3. Đọc dependencies trong `plugin.yaml`: openpyxl, pypdf, Pillow. Consent provisioning riêng; dependency manager của Hermes giữ selection cũ nếu admission thất bại. `hermes plugins deps` không có trong CLI đã kiểm: đừng tự dựng lệnh này. Doctor/import đúng interpreter không thay live business acceptance.
