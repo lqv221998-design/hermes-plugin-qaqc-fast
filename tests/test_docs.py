@@ -36,7 +36,7 @@ class Documentation(unittest.TestCase):
                     with self.subTest(doc=doc.name,link=link):self.assertTrue((doc.parent/relative).exists())
     def test_three_skills_and_top_guides_use_current_release(self):
         for path in ('skills/setup/SKILL.md','skills/operations/SKILL.md','skills/tasks/SKILL.md','README.md','START-HERE-HERMES.md','SETUP.md'):
-            with self.subTest(path=path):self.assertIn('0.2.0-rc.2',(ROOT/path).read_text(encoding='utf-8'))
+            with self.subTest(path=path):self.assertIn('0.2.0-rc.3',(ROOT/path).read_text(encoding='utf-8'))
 
 
 if __name__=='__main__':unittest.main()

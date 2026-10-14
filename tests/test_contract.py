@@ -31,7 +31,7 @@ class Host:
         self.outputs = iter(outputs)
         self.calls = []
     def get_config(self, key, default=None):
-        return 'Người A' if key=='expected_user_display_name' else default
+        return 'manual' if key=='context_policy' else 'Người A' if key=='expected_user_display_name' else default
     def call_mcp(self, server, tool, arguments, timeout=15):
         self.calls.append((server, tool, arguments))
         return {'ok':True, 'result':next(self.outputs)}
@@ -54,7 +54,7 @@ class Contract(unittest.TestCase):
 
     def test_unbound_user_is_blocked_before_browser_access(self):
         host = Host([])
-        host.get_config = lambda key,default=None: '' if key=='expected_user_display_name' else default
+        host.get_config = lambda key,default=None: 'manual' if key=='context_policy' else '' if key=='expected_user_display_name' else default
         for action in ('pages','inspect'):
             args={'action':action}
             if action=='inspect':
@@ -66,10 +66,10 @@ class Contract(unittest.TestCase):
     def test_each_recipient_uses_their_own_bound_browser_account(self):
         for user in ('Người A','Người B'):
             host=Host([snapshot(user=user)])
-            host.get_config=lambda key,default=None,u=user: u if key=='expected_user_display_name' else default
+            host.get_config=lambda key,default=None,u=user: 'manual' if key=='context_policy' else u if key=='expected_user_display_name' else default
             result=plugin.run(host,{'action':'inspect','page_id':1,'expected_project':'Công trình A'})
             self.assertTrue(result['ok'],result)
-            self.assertEqual(result['page']['account_check'],'display_name_matches_local_binding')
+            self.assertEqual(result['page']['account_check'],'observed_session_context_not_unique_principal')
 
     def test_wrong_or_switched_account_cannot_navigate(self):
         host=Host([snapshot(user='Người B')])

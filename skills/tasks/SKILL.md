@@ -1,19 +1,20 @@
 ---
 name: tasks
 description: Use when asked to open QAQC links/tabs or read diaries.
-version: 0.2.0-rc.2
+version: 0.2.0-rc.3
 license: MIT
 platforms: [windows]
 ---
 # QAQC Fast — từ yêu cầu đến thao tác
+Máy nhận chưa đủ môi trường → setup + [PREREQUISITES.md](../../PREREQUISITES.md), [PROMPT-HERMES.md](../../PROMPT-HERMES.md); thiếu template QAQC là server/business blocker, không pip/npm repair.
 
 Plugin này giúp Hermes mở và quan sát QAQC, đọc nhật ký/hồ sơ/ảnh/rủi ro, tra cứu và xử lý **hồ sơ thử được grant** có read-back. Không thay kỹ sư/ký duyệt, không nâng ACL và không điều khiển website khác. Nạp operations trước browser work; setup khi thiếu prerequisite. Không cần thư viện skills/memories riêng của tác giả.
 
 ## Bắt đầu mỗi máy/phiên mới
-1. Gọi `qaqc_fast_session` với `{"action":"capabilities"}`. Bản này phải trả `0.2.0-rc.2` và có prepare/open_page/open_page_status. Không có thì **runtime chưa đúng**, không đoán giới hạn từ README mới; kiểm cài/enable/profile rồi mở phiên mới.
+1. Gọi capabilities, phải thấy **0.2.0-rc.3** và prepare/open_page/open_page_status. Không có thì runtime chưa đúng, kiểm cài/enable/profile/phiên mới; không suy runtime từ README.
 2. Nạp `qaqc-fast:setup`, `qaqc-fast:operations`, skill này. Không tìm thấy skill → discovery/activation pending; đọc START-HERE-HERMES.md trực tiếp để chẩn đoán, không raw browser fallback.
-3. `{"action":"prepare"}` không gọi browser, không cài/configure gì, không đọc account/cookies. Thiếu expected_user_display_name → xin người nhận xác nhận tên hiển thị của mình và consent cấu hình. Không tự adopt account đang mở. Import specs không là dependency import/handshake/site acceptance.
-4. Hỏi tên dự án chính xác nếu thiếu; hỏi phạm vi ghi nếu yêu cầu còn mơ hồ. URL parameters không phải tên dự án. Không yêu cầu password/OTP/token trong chat.
+3. prepare local không gọi browser/cài/configure/đọc cookies. Auto mặc định không yêu cầu tên; dùng phiên đăng nhập người nhận, không phiên tác giả. Import specs không là handshake/site acceptance.
+4. Không hỏi tên dự án cho kết nối/đọc tab đã chọn. expected_project tùy chọn khi người dùng chọn đích cụ thể, phải kiểm assertion. Chuyển dự án mới cần chọn đích rõ ràng. Hỏi phạm vi ghi nếu mơ hồ; không nhận password/OTP/token trong chat.
 
 ## Chọn đúng action
 | Người dùng nói | Luồng | Không được suy |
@@ -32,7 +33,7 @@ Plugin này giúp Hermes mở và quan sát QAQC, đọc nhật ký/hồ sơ/ả
 Đọc [ví dụ gọi tool](references/examples.md) và [Nhật ký thi công](references/construction-diary.md) trước tác vụ tương ứng. Các giá trị Fixture trong ví dụ là dữ liệu synthetic, **phải thay bằng thông tin người dùng chọn/quan sát**, không chạy literal fixture trên live site.
 
 ## Lỗi → kết luận đúng
-- pending_user_binding + mcp_calls=0: chỉ chứng minh thiếu binding; **chưa kiểm browser/trang/ACL**. Không kết luận “trang không hỗ trợ” hay dự báo destination_not_verified.
+- pending_user_binding chỉ ở optional manual legacy policy. Auto mode không bắt nhập tên. Nếu runtime cũ còn bắt tên, kiểm version/activation, không suy browser/trang/ACL từ mcp_calls=0.
 - pages rỗng: không có tab thuộc nhóm được liệt kê; bootstrap/home có trạng thái riêng. Không là mất quyền/không có hồ sơ.
 - pending_login: người nhận tự login trên đúng Chrome. Không đổi account/controller.
 - project_mismatch/user_mismatch/permission_denied: dừng; không tự chấp nhận project/account khác.

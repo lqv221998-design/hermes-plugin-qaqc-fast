@@ -1,7 +1,7 @@
 ---
 name: operations
 description: Use when operating QAQC. Verify project, discipline and effects.
-version: 0.2.0-rc.2
+version: 0.2.0-rc.3
 license: MIT
 platforms: [windows]
 metadata:
@@ -10,22 +10,23 @@ metadata:
     related_skills: [qaqc-site-map, qaqc-business-map]
 ---
 # QAQC Fast — operating contract
+Missing local runtime/libraries: load setup, read [PREREQUISITES.md](../../PREREQUISITES.md) and [recipient prompt](../../PROMPT-HERMES.md). Native PM and actual import/version proof; server template/ACL denial is not a local dependency fault.
 
 Use `qaqc_fast_session` only. Do not call raw `chrome_qaqc`, DMS tools, a second browser driver, JavaScript or account APIs to bypass this executor. Scoped Computer Use runs through the executor, not fallback after refusal. This intent policy is not an OS sandbox or backend ACL. Load `qaqc-fast:setup` for prerequisite gates.
 
 ## Resolve the work
-Bind each recipient separately: use their own Windows/Hermes profile, visible Chrome and QAQC login. Set `expected_user_display_name` locally after the recipient verifies their own displayed identity. Empty binding blocks browser access. Before navigation and after each click, a different/unverifiable displayed account stops the operation. Never copy the researcher's browser endpoint/profile/cookies/settings/account bindings to another person; never auto-bind to whatever account happens to be open. This display-name guard detects ordinary account switching, not unique-principal authentication; QAQC backend ACL remains authoritative. Identical display names cannot be disambiguated by this v0.1 UI evidence.
+Default context_policy=auto uses the recipient's own browser login and QAQC backend ACL. No typed account/project binding is required. Observe current page context, keep it stable during an operation, never copy author cookies/permissions/settings. Old expected_user_display_name is ignored in auto mode; optional manual policy is only a legacy assertion. Display names are not unique principals or access grants.
 
-This package is self-contained. Read the bundled `references/module-guide.md` for module meaning and coverage. If installed, `qaqc-business-map` and `qaqc-site-map` can supply additional approved organizational context; they are optional, not installation requirements. Obtain this user's exact target project. Never substitute the current project, a research project or a URL segment: `503` is a menuId, not a project identity. No particular account or project is the package default.
+Read bundled references/module-guide.md; author global skills are optional. Current project is observed from selected page header, never URL IDs. If user selects a specific target, expected_project is an optional assertion and mismatch stops. No author project/account is a default.
 
 ## Tool flow
-Start with `qaqc-fast:tasks` for purpose/request routing and runnable examples. `capabilities` must match this version; `prepare` reports local missing binding/specs without MCP. Do not diagnose unsupported destinations from a prerequisite block. Three legacy recipes are not all RC actions. Reading a workflow/settings page is not a send/approve action.
+Start with tasks, capabilities and local prepare; auto mode requires no name input. Prerequisite block does not establish route/ACL failure. Three legacy recipes are not all actions; reading workflow is not granting transitions.
 
-`open_page` accepts an exact user-selected QAQC URL with mode new/reuse, operation_id and exact requested project for business routes. Separate allow_open_page/allow_new_tab and host approval are required; native new_page must be included only after recipient consent. New tabs are background and identified uniquely; reuse verifies source/account/project before navigate and dismisses beforeunload rather than accepting data loss. No browser launcher, profile copy or arbitrary-domain URL. Optional destination_heading must be actually known, not invented. Exact root may be opened only in new mode as bootstrap; user/project/business remain unverified. Binding is still required before browser calls. `open_page_status` observes an owned attempt only, never reopens/navigates. Resolve login/unknown effects under the same ledger; no new ID to replay. A successfully opened URL/account/project does not establish data readiness.
+open_page accepts exact QAQC URL, mode new/reuse and operation_id, without typed names in auto mode. Separate grants/host approval remain. New is background and uniquely identified; reuse verifies source context. No launcher/profile copy/arbitrary domains. Root is bootstrap only, not business verification. open_page_status reconciles same session/attempt without replay. Context/URL verified is not data readiness or permission expansion.
 
 1. `capabilities` returns supported actions/modules without browser access.
 2. `pages` discovers supported QAQC page IDs and separate bootstrap_pages for the exact root. It does **not** open Chrome, verify project or authenticate. Never assume page 1. Multiple pages require selecting the relevant observed source.
-3. `inspect` needs `page_id` + `expected_project`. It checks the header signature, not arbitrary project names in cards/rows.
+3. inspect needs page_id; project is observed from header. expected_project is optional explicit target assertion, not card/URL inference.
 4. `open_module` or `read_list` needs these fields + `module`: `work_acceptance`, `photos`, `quality_risks`. One executor call batches a bounded live-menu walk; after every click it rechecks source/project. A destination requires the live route and exact business heading. No arbitrary UID/URL/label input is accepted.
 5. Public `read_list` and `read_view` persist all observed current-page rows/text/links to a hashed artifact; no 100/250/100 slicing. Native snapshot file budget 8 MiB fails closed, never silently clips. Non-semantic DOM stays unstructured, not invented records. Readiness requires stable snapshots plus explicit data/completion/empty/counter and no busy/loading/contradiction; false is pending, not a zero-record proof. Exclude only iframe subtree, keeping later top-page siblings. Current page is not whole inventory, SharePoint link not workbook content.
 
@@ -35,7 +36,7 @@ Start with `qaqc-fast:tasks` for purpose/request routing and runnable examples. 
 - Supply expected_discipline when required. Only selected/checked/pressed=true on a matching control verifies XÂY DỰNG/CƠ ĐIỆN; labels alone do not. If unavailable/mismatched, stop rather than force true. Legacy inspect is only header observation; use new read_view/read_list for discipline/readiness.
 - `pending_login`: ask the human to log in in the dedicated Chrome or use host vault tools where they can target that page. Never accept/type/store passwords or 2FA through this plugin.
 - `permission_denied`, `project_mismatch`, `project_header_unverified`, `navigation_missing_or_dom_drift`, `destination_not_verified`: stop; do not retry/fallback into another project/browser/account.
-- `pending_user_binding`, `user_mismatch`, `user_header_unverified`: stop and let the recipient correct their own browser/binding; never adopt the researcher's account. Supported recipes are not permission inventory. Deny/missing controls stay unverified, not zero records.
+- pending_user_binding only applies to opt-in manual policy. In auto, user/project drift or unverified header stops the current operation without asking for a persistent name binding. Never use author account or bypass ACL.
 - Host block/failure/truncation: no plugin retry. Check native connector/approval and fresh UI before an explicit new request. Do not infer success from the click or timeout.
 
 ## Expanded RC flows and limits

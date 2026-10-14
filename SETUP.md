@@ -1,4 +1,4 @@
-# Cài QAQC Fast 0.2.0-rc.2 theo từng người sử dụng
+# Cài QAQC Fast 0.2.0-rc.3 theo từng người sử dụng
 
 Hướng dẫn chính: [START-HERE-HERMES.md](START-HERE-HERMES.md). Đây là root-layout Git repository/Agent component; setup và operations bundled, không cần #subdir, không có Desktop pane. Native repository install/review là primary path.
 
@@ -11,6 +11,7 @@ Load `qaqc-fast:setup`; dependencies openpyxl/pypdf/Pillow được khai báo v�
 - Đây là plugin desktop cá nhân, không phải lớp xác thực cho một dịch vụ nhiều người dùng chung Chrome. Không triển khai theo mô hình đó.
 
 ## Điều kiện
+Thiếu runtime/thư viện: theo [PREREQUISITES.md](PREREQUISITES.md); prompt điều phối [PROMPT-HERMES.md](PROMPT-HERMES.md). Đọc từng actual dependency_imports, không chỉ prepare.ok/find_spec.
 Hermes có native MCP SDK và API PluginContext.call_mcp; Node.js và Chrome trên máy của người nhận. Connector đã nghiệm thu với chrome-devtools-mcp 1.10.1 của GoogleChromeLabs. Không cần Jev, BrowserPaw, service account hoặc API key QAQC.
 
 ## Thiết lập trên máy người nhận
@@ -19,13 +20,13 @@ Hermes có native MCP SDK và API PluginContext.call_mcp; Node.js và Chrome tr�
 3. Cài phiên bản cố định `chrome-devtools-mcp@1.10.1` từ nguồn GoogleChromeLabs. Trong Hermes tạo native STDIO MCP server tên **chrome_qaqc**. Dùng Node và entrypoint `build/src/bin/chrome-devtools-mcp.js` của bản đã cài trên máy người nhận. Browser URL phải là loopback endpoint của Chrome riêng ở bước 2, KHÔNG lấy endpoint/đường dẫn máy người xây.
 4. Giới hạn tool native đúng tên: list_pages,take_snapshot,click,wait_for,fill_form,upload_file,navigate_page; thêm new_page sau consent tạo tab. allow_open_page/allow_new_tab mặc định false, bật từng key chỉ khi grant. Tắt resources/prompts/sampling/elicitation, usage statistics, CrUX, JavaScript evaluation và category không cần. Không generic script/API; giữ DMS nguyên trạng và approval/trust.
 5. Người nhận tự quyết định trust/approval. Không sao chép chấp thuận của tác giả. Nếu chọn untrusted, các bước điều hướng có thể cần approval của chính người nhận; không đổi trust để né một từ chối.
-6. Chỉ cấp MCP allowlist **chrome_qaqc** cho `plugins.entries.qaqc-fast`. Cấu hình `settings.mcp_server` là chuỗi **chrome_qaqc**, và `settings.expected_user_display_name` là chính xác tên tài khoản QAQC do người nhận xác nhận. Dùng giao diện Hermes hoặc `hermes config set`, không sửa YAML toàn file. Với CLI, truyền string nguyên văn; JSON chỉ dành cho object/list, tránh thêm dấu nháy vào giá trị string.
-7. Tên mặc định trong manifest là rỗng: plugin phải trả `pending_user_binding` trước khi đọc Chrome. Không tự bind theo tài khoản tình cờ đang mở. Binding tên hiển thị chỉ chống dùng nhầm thông thường; tên trùng nhau không xác minh được principal duy nhất.
+6. Chỉ cấp MCP allowlist **chrome_qaqc**; settings.mcp_server phải cùng key. context_policy mặc định **auto**, không cấu hình tên người dùng. Config thay đổi qua native UI/hermes config set sau consent, không thay nguyên YAML.
+7. Không cần tên tài khoản hoặc dự án trước kết nối. Plugin dùng own login/session người nhận và quan sát context của tab được chọn, không lưu binding tên tĩnh. expected_project tùy chọn khi có một đích cụ thể. Manual policy cũ chỉ là opt-in assertion, không quyền QAQC.
 8. Mở phiên chat mới để native MCP dùng cấu hình đã lưu. Không reload toàn bộ MCP hay restart DMS đang làm việc chỉ để kích hoạt QAQC.
 
 ## Nghiệm thu cho từng người nhận
 - Nạp `qaqc-fast:tasks` và `qaqc-fast:operations`; chạy capabilities, prepare, pages/open_page; lấy page ID quan sát thực tế, không mặc định 1. Root/bootstrap khác business; xem ví dụ request trong tasks. Không tìm thấy skill/action/version thì activation pending, không kết luận chỉ ba module.
-- Chạy inspect với tên dự án chính xác mà chính người nhận yêu cầu. Phải kiểm được account/header/source; đừng dùng dự án đang mở hoặc Dự án TEST làm mặc định.
+- Chạy inspect/read_view với page_id; project/account tự quan sát. Nếu người dùng đã chỉ định đích khác thì truyền expected_project và phải kiểm khớp. Không tự dùng Dự án TEST cho mọi người.
 - Nếu website từ chối hoặc menu thiếu, dừng; không đổi tài khoản, đoán URL/ID hoặc dò API để vượt quyền.
 - Thử module mà người nhận có quyền đọc. Kết quả kiểm riêng người này không chứng minh người khác có cùng quyền.
 - Tên tài khoản không khớp, đổi tài khoản hoặc header không rõ phải dừng. Kiểm chuyển tài khoản chỉ thực hiện với tài khoản do chính người nhận được phép sử dụng.

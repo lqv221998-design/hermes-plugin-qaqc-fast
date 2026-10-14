@@ -41,7 +41,7 @@ class Host:
         self.outputs = iter(outputs)
         self.calls = []
     def get_config(self,key,default=None):
-        return 'Fixture User' if key=='expected_user_display_name' else default
+        return 'manual' if key=='context_policy' else 'Fixture User' if key=='expected_user_display_name' else default
     def call_mcp(self,server,tool,arguments,timeout=15):
         self.calls.append((tool,arguments))
         text = next(self.outputs)

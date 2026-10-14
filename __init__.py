@@ -74,13 +74,21 @@ def header_project(nodes):
         raise Stop('project_header_unverified')
     return matches[0]
 
+def context_policy(ctx):
+    value = ctx.get_config('context_policy',default='auto')
+    if value not in ('auto','manual'):
+        raise Stop('invalid_context_policy')
+    return value
+
 def user_binding(ctx):
+    if context_policy(ctx)=='auto':
+        return None
     value = ctx.get_config('expected_user_display_name',default='')
     if not isinstance(value,str) or not value.strip() or len(value)>200:
         raise Stop('pending_user_binding')
     return value
 
-def check_user(nodes, expected_user):
+def check_user(nodes, expected_user=None):
     # Anti-account-switch check on the observed sidebar profile header.
     # A display name is NOT a unique authenticated principal or an ACL.
     first_menu = next((i for i,n in enumerate(nodes) if n['depth']==2 and n['role']=='link'
@@ -91,14 +99,15 @@ def check_user(nodes, expected_user):
              and any(c.isalnum() for c in n['name'])]
     if len(names)!=1:
         raise Stop('user_header_unverified')
-    if names[0] != expected_user:
+    if expected_user is not None and names[0] != expected_user:
         raise Stop('user_mismatch')
+    return names[0]
 
 def describe(nodes, project):
     return {'url':nodes[0]['url'], 'title':nodes[0]['name'], 'project':project,
             'headings':list(dict.fromkeys(n['name'] for n in nodes if n['role']=='heading'))[:50],
             'discipline_verification':'not_exposed_by_accessibility_snapshot',
-            'account_check':'display_name_matches_local_binding',
+            'account_check':'observed_session_context_not_unique_principal',
             'unique_principal_verified':False,
             'permission_enforcement':'QAQC backend ACL under the recipient browser session; no researcher permission transfer',
             'inventory_complete':False, 'full_document_read':False,
@@ -231,13 +240,15 @@ def run(ctx, args):
                     continue
                 pages.append({'page_id':int(pid),'url':url})
             return {'ok':True,'pages':pages,'bootstrap_pages':bootstrap_pages,'project_verified':False,'mcp_calls':calls,
-                    'instruction':'Select one observed page ID and supply the user-requested exact project; pages does not verify project.'}
+                    'instruction':'Select one observed page ID; current account/project are observed automatically. expected_project is an optional explicit target assertion.'}
         if action not in ('inspect','open_module','read_list') or type(args.get('page_id')) is not int or args['page_id'] < 0:
             raise Stop('invalid_input')
         if (action in ('open_module','read_list') and args.get('module') not in MODULES) or (action == 'inspect' and 'module' in args):
             raise Stop('invalid_input')
         expected = args.get('expected_project')
-        if not isinstance(expected, str) or not expected.strip() or len(expected)>200:
+        if expected is None and context_policy(ctx)=='manual':
+            raise Stop('invalid_input')
+        if expected is not None and (not isinstance(expected, str) or not expected.strip() or len(expected)>200):
             raise Stop('invalid_input')
         if ctx.get_config('mcp_server', default='chrome_qaqc') != 'chrome_qaqc':
             raise Stop('invalid_mcp_settings')
@@ -254,10 +265,13 @@ def run(ctx, args):
             return envelope.get('result')
 
         def checked(text):
+            nonlocal expected, expected_user
             nodes = parse_snapshot(text)
-            check_user(nodes,expected_user)
-            if header_project(nodes) != expected:
+            expected_user = check_user(nodes,expected_user)
+            observed = header_project(nodes)
+            if expected is not None and observed != expected:
                 raise Stop('project_mismatch')
+            expected = observed
             return nodes
 
         nodes = checked(call('take_snapshot',{'pageId':args['page_id']}))

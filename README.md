@@ -1,11 +1,14 @@
-# QAQC Fast 0.2.0-rc.2 — mở QAQC có ngữ cảnh, chưa full-site acceptance
+# QAQC Fast 0.2.0-rc.3 — ngữ cảnh tự động, quyền theo phiên người dùng
+
+RC3 là release candidate, không tự cập nhật máy nhận. Mặc định **context_policy=auto**: không nhập/binding tên tài khoản hoặc tên dự án để kết nối. Backend QAQC quyết định quyền theo phiên Chrome của người đang dùng; không áp quyền tác giả cho mọi người. `expected_project` là assertion tùy chọn, không phải prerequisite đọc cơ bản. Chính sách manual cũ chỉ dùng khi tổ chức chủ động chọn.
 
 ## Plugin dùng để làm gì và bắt đầu thế nào?
+Thiếu Python/Node.js/npm/thư viện hoặc template? Đọc [PREREQUISITES.md](PREREQUISITES.md). Prompt máy nhận: [PROMPT-HERMES.md](PROMPT-HERMES.md). Chỉ install phần thực sự thiếu sau consent; template QAQC không là Python library.
 Giúp Hermes mở đúng link/tab **QAQC**, đọc nhật ký thi công/hồ sơ nghiệm thu/ảnh/rủi ro, tra cứu và xử lý **hồ sơ thử được grant** có read-back. Không điều khiển website khác, không nâng ACL, không thay kỹ sư hoặc tự login.
 
 1. Nạp **qaqc-fast:tasks** để chọn action theo yêu cầu; **qaqc-fast:setup** khi thiếu prerequisite; **qaqc-fast:operations** trước browser work.
-2. Gọi **capabilities → prepare**. Phải nhận version 0.2.0-rc.2 với prepare/open_page/open_page_status. prepare không truy cập browser. Thiếu binding với mcp_calls=0 không chứng minh trang không hỗ trợ.
-3. Người nhận có own Chrome/MCP/login/binding và grant local; lấy exact requested project, không suy từ URL.
+2. Gọi **capabilities → prepare**. Phải nhận version 0.2.0-rc.3 với prepare/open_page/open_page_status. prepare không truy cập browser; không hỏi tên trong auto mode.
+3. Người nhận dùng own Chrome/MCP/login và grants local; plugin đọc project từ header của tab chọn, không suy từ URL. Có đích dự án riêng thì mới cung cấp assertion.
 4. **open_page** nhận literal QAQC URL mode new/reuse; new mở background và kiểm duy nhất tab, reuse kiểm account/project nguồn. **open_page_status** chỉ đối soát attempt, không replay. Sau mở dùng read_view để kiểm readiness/coverage.
 
 Đọc [ví dụ request hợp schema](skills/tasks/references/examples.md) và [recipe Nhật ký thi công](skills/tasks/references/construction-diary.md). Ví dụ synthetic, không là chứng nhận mọi live UI. Skills không tự vào available_skills của Hermes; bản này có schema guidance, hook ngữ cảnh và frozen prompt section cho host hỗ trợ. Không sửa cache/prompt phiên cũ.
@@ -28,7 +31,7 @@ Plugin Python độc lập cho Hermes; tool `qaqc_fast_session`, skill `qaqc-fas
 ## Quyền theo người dùng
 - Plugin chạy bằng phiên QAQC của **người cài/sử dụng**, không bằng quyền tác giả hoặc người nghiên cứu.
 - Mỗi người dùng có OS/Hermes/Chrome profile riêng và tự đăng nhập QAQC. Backend QAQC quyết định dự án/hồ sơ họ được truy cập. Plugin không nâng quyền, gọi service account hoặc tái sử dụng tài khoản nghiên cứu.
-- `expected_user_display_name` phải được người nhận xác nhận và cấu hình cục bộ. Mặc định trống; thiếu ràng buộc chặn browser. Sai tài khoản/dự án dừng trước điều hướng; kiểm lại sau mỗi click.
+- Auto mode bỏ binding nhập tay; setting tên cũ được bỏ qua. Ngữ cảnh quan sát được khóa trong một thao tác để phát hiện đổi account/project giữa các bước, không dùng làm ACL.
 - Tên hiển thị chỉ là kiểm tra chống đổi nhầm account, không phải định danh đăng nhập duy nhất. Hai tài khoản trùng tên chưa được phân biệt bởi v0.1. Không dùng plugin desktop này làm lớp auth cho một dịch vụ nhiều người dùng.
 - Đồng ý trust/allowlist trên máy tác giả không chuyển sang máy người nhận. Người nhận tự cấp quyền kết nối theo chính sách của họ.
 - Gói không chứa config máy tác giả, tài khoản, mật khẩu, cookie, browser profile, endpoint, token, session/state hoặc dữ liệu dự án thật. Fixtures trong tests là dữ liệu tổng hợp để kiểm code, không phải dữ liệu nghiệm thu website.
@@ -45,7 +48,7 @@ read_view/read_list current-page lossless; read_all có pagination/dedupe/total 
 2. Native Desktop: Capabilities → Plugins → Install plugin → Repository → URL repo → Review repository; kiểm Agent/profile/commit/dependencies rồi consent. CLI: `hermes plugins install <URL-repo> --no-enable`, optional `--ref <actual-full-40-hex-SHA>`; enable riêng `hermes plugins enable qaqc-fast --no-allow-tool-override`. Root layout không dùng fragment hoặc helper copy. Doctor dùng absolute installed directory. Không force reinstall hoặc tự grant MCP từ installation.
 3. Tạo kết nối Chrome QAQC **riêng của người nhận**, chạy Google `chrome-devtools-mcp@1.10.1`. Không copy kết nối/CDP endpoint hoặc Chrome profile của tác giả. Tắt JavaScript evaluation, usage statistics và CrUX. Khi Chrome khởi động lại, phát hiện lại endpoint cục bộ; không dùng port mẫu của máy khác.
 4. Native chrome_qaqc include list_pages,take_snapshot,click,wait_for,fill_form,upload_file,navigate_page; new_page chỉ sau consent tạo tab. allow_open_page/allow_new_tab mặc định false; resources/prompts/sampling/elicitation false, parallel false. Trust theo consent riêng; không đổi DMS hoặc credentials. DevTools rộng, policy không là sandbox.
-5. Dùng public `hermes config set` để cấp `plugins.entries.qaqc-fast.mcp_allowlist` chỉ cho server trên; cấu hình `plugins.entries.qaqc-fast.settings.expected_user_display_name` bằng đúng tên của người nhận đã tự xác nhận ở UI. Không có tên mặc định. Không ghi mật khẩu vào config.
+5. Dùng public `hermes config set` khi cần consent cấp mcp_allowlist cho chrome_qaqc. context_policy mặc định auto, không nhập tên tài khoản/dự án. Không ghi mật khẩu vào config.
 6. Mở chat mới; load `qaqc-fast:tasks` và `qaqc-fast:operations`, chạy capabilities → prepare → pages/open_page → inspect/read_view với đúng dự án yêu cầu. Không nhận `pages` success làm xác nhận account/dự án. Nếu pending_login, người nhận tự đăng nhập hoặc dùng host vault đúng origin; plugin không nhập credentials.
 7. Không profile-wide reload/restart DMS chỉ để dùng QAQC. Nếu connection chưa xuất hiện, nghiệm thu trong phiên mới trước; không thay server DMS.
 

@@ -32,7 +32,7 @@ COMMON = {'action','page_id','expected_project','expected_discipline'}
 
 class Session:
     def __init__(self, ctx, args, kwargs):
-        from . import Stop, user_binding
+        from . import Stop, user_binding, context_policy
         self.ctx, self.args, self.kwargs = ctx, args, kwargs
         self.calls = 0
         self.timings = []
@@ -44,7 +44,9 @@ class Session:
             raise Stop('invalid_mcp_settings')
         if type(self.page_id) is not int or self.page_id < 0:
             raise Stop('invalid_input')
-        if not isinstance(self.project,str) or not self.project.strip() or len(self.project)>200:
+        if self.project is None and context_policy(ctx)=='manual':
+            raise Stop('invalid_input')
+        if self.project is not None and (not isinstance(self.project,str) or not self.project.strip() or len(self.project)>200):
             raise Stop('invalid_input')
         self.discipline = args.get('expected_discipline')
         if self.discipline is not None and self.discipline not in ('XÂY DỰNG','CƠ ĐIỆN'):
@@ -70,9 +72,13 @@ class Session:
     def checked(self, text, project=None, check_discipline=True):
         from . import Stop, parse_snapshot, check_user, header_project, selected_discipline
         nodes = parse_snapshot(text,max_chars=8*1024*1024)
-        check_user(nodes,self.user)
-        if header_project(nodes) != (self.project if project is None else project):
+        self.user = check_user(nodes,self.user)
+        observed = header_project(nodes)
+        expected = self.project if project is None else project
+        if expected is not None and observed != expected:
             raise Stop('project_mismatch')
+        if self.project is None:
+            self.project = observed
         if check_discipline and self.discipline and selected_discipline(nodes) != self.discipline:
             raise Stop('discipline_unverified_or_mismatch')
         current = self.ctx.state.get('native_handoff')
@@ -506,6 +512,7 @@ class Session:
         handoff = self.ctx.state.get('native_handoff')
         if not isinstance(handoff,dict) or handoff.get('invalidated') or handoff.get('consumed') or handoff.get('token')!=self.args.get('handoff_token'):
             raise Stop('native_handoff_missing_stale_or_consumed')
+        self.inherit_native_context(handoff)
         if handoff.get('session_id')!=self.kwargs.get('session_id') or handoff.get('project')!=self.project or handoff.get('user')!=self.user:
             raise Stop('native_handoff_scope_mismatch')
         if time.time()-handoff.get('captured_at',0)>90 or handoff.get('sha256')!=self.args.get('reviewed_capture_sha256'):
@@ -572,6 +579,19 @@ class Session:
         return {**result,'ok':confirmed,'status':'native_driver_effect_confirmed' if confirmed else 'native_effect_unverified',
                 'business_effect_verified':False,'retried':False,'instruction':'Fresh capture and business/file read-back are required. Never replay an uncertain input or transfer.'}
 
+    def inherit_native_context(self,handoff):
+        from . import Stop, context_policy
+        if context_policy(self.ctx)!='auto':
+            return
+        if not isinstance(handoff,dict) or handoff.get('session_id')!=self.kwargs.get('session_id'):
+            raise Stop('native_handoff_scope_mismatch')
+        if not all(isinstance(handoff.get(k),str) and handoff[k] for k in ('user','project')):
+            raise Stop('native_handoff_scope_mismatch')
+        if self.user is None:
+            self.user = handoff['user']
+        if self.project is None:
+            self.project = handoff['project']
+
     def native_capture(self,nodes):
         from . import Stop
         pid,window = self.args.get('pid'),self.args.get('window_id')
@@ -580,6 +600,7 @@ class Session:
         cached = None
         if nodes is None:
             cached = self.ctx.state.get('native_handoff')
+            self.inherit_native_context(cached)
             if not cached or cached.get('invalidated') or cached.get('token')!=self.args.get('handoff_token') or cached.get('session_id')!=self.kwargs.get('session_id') or cached.get('project')!=self.project or cached.get('user')!=self.user:
                 raise Stop('native_refresh_scope_unverified')
             if cached.get('source_verification')!='native_header_user_project_checked' or cached.get('pid')!=pid or cached.get('window_id')!=window or time.time()-cached.get('captured_at',0)>300:
@@ -882,6 +903,9 @@ def run_extended(ctx,args,**kwargs):
             raise Stop('controller_busy')
         checks = {'project':args.get('from_project'),'check_discipline':False} if args['action']=='set_context' else {}
         skip_snapshot = args['action'] in ('native_step','verify_transfer','diagnose','restore_browser','checkpoint') or (args['action']=='native_capture' and args.get('handoff_token'))
+        from . import context_policy
+        if context_policy(ctx)=='auto' and args['action'] in ('verify_transfer','checkpoint'):
+            skip_snapshot = False  # observe own current context rather than ask for names
         nodes = None if skip_snapshot else session.snapshot(**checks)
         result = getattr(session,args['action'])(nodes)
     except Stop as exc:

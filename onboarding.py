@@ -1,16 +1,21 @@
 """Self-contained recipient guidance. No configuration writes or browser bootstrap."""
 from importlib.util import find_spec
+from importlib import import_module
+from importlib.metadata import version
+import sys
 
-VERSION = '0.2.0-rc.2'
+VERSION = '0.2.0-rc.3'
 START_CONTEXT = (
     'QAQC Fast hỗ trợ mở/đọc website QAQC, nhật ký thi công, hồ sơ nghiệm thu, ảnh và rủi ro; '
     'không thay kỹ sư, không nâng ACL. Dùng qaqc_fast_session, không raw chrome_qaqc. '
     'Nạp qaqc-fast:tasks để ánh xạ yêu cầu thành thao tác, qaqc-fast:setup khi thiếu prerequisite, '
     'qaqc-fast:operations trước thao tác. capabilities kiểm runtime/actions, prepare kiểm local '
     'prerequisite không gọi browser; pages chỉ tìm tab đã có. open_page nhận URL QAQC do người dùng '
-    'chọn và mode new/reuse, cần grant mở trang/tab, binding, đúng tên dự án, operation_id và '
-    'xác minh đích; không tự chạy Chrome. Thiếu binding với mcp_calls=0 không chứng minh browser '
-    'hỏng hoặc trang không hỗ trợ. Ba module legacy là recipes, không toàn bộ RC scope. Đọc '
+    'chọn và mode new/reuse, cần grant mở trang/tab, operation_id và xác minh đích; không tự chạy Chrome. '
+    'Mặc định context_policy=auto: không bắt nhập tên tài khoản hoặc dự án trước kết nối; '
+    'tự quan sát ngữ cảnh trang hiện tại. expected_project chỉ là assertion tùy chọn khi có đích cụ thể. '
+    'Quyền do QAQC backend theo phiên đăng nhập của người dùng, không dùng quyền/cookie tác giả. '
+    'Không đổi account/project giữa thao tác, không nâng quyền. Ba module legacy là recipes. Đọc '
     'trang workflow không đồng nghĩa gửi/duyệt. Login/ACL/denial/mismatch là pending, không '
     'fallback/replay. Ghi chỉ hồ sơ thử mới do plugin sở hữu ở TEST được grant; workflow riêng. '
     'Không suy project từ URL, không copy cookies/profile. Current-page không là toàn inventory. '
@@ -39,19 +44,30 @@ def guidance(status, mcp_calls=0):
 
 
 def prepare(ctx, args):
-    from . import Stop
+    from . import Stop, context_policy
     if set(args) != {'action'}:
         raise Stop('invalid_input')
     value = ctx.get_config('expected_user_display_name', default='')
     missing = []
-    if not isinstance(value, str) or not value.strip() or len(value) > 200:
+    policy = context_policy(ctx)
+    if policy=='manual' and (not isinstance(value, str) or not value.strip() or len(value) > 200):
         missing.append('expected_user_display_name')
     if ctx.get_config('mcp_server', default='chrome_qaqc') != 'chrome_qaqc':
         missing.append('mcp_server=chrome_qaqc')
     dependencies = {name: find_spec(name) is not None for name in ('openpyxl', 'pypdf', 'PIL')}
+    imports = {}
+    for name,module,distribution in [('openpyxl','openpyxl','openpyxl'),('pypdf','pypdf','pypdf'),('Pillow','PIL.Image','Pillow')]:
+        try:
+            import_module(module)
+            imports[name] = {'ok':True,'version':version(distribution)}
+        except Exception as exc:
+            imports[name] = {'ok':False,'error_type':type(exc).__name__}
     status = 'pending_user_binding' if 'expected_user_display_name' in missing else 'local_prerequisites_observed'
     return {'ok': not missing, 'version': VERSION, 'status': status, 'missing': missing,
+            'context_policy':policy,'manual_context_required':policy=='manual',
             'dependency_import_specs': dependencies, 'mcp_calls': 0,
+            'dependency_imports':imports,'python_runtime':{'executable':sys.executable,'version':sys.version.split()[0]},
+            'dependency_installation':'not_attempted; use native PM after consent; see PREREQUISITES.md',
             'browser_checked': False, 'destination_checked': False, 'business_verified': False,
             'mcp_handshake': 'not_checked', 'browser_login_acl': 'not_checked',
             'grants': {key: ctx.get_config(key, default=False) is True for key in ('allow_open_page', 'allow_new_tab')},

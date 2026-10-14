@@ -88,7 +88,7 @@ class FirstUse(unittest.TestCase):
 
     def test_open_grants_and_schema_are_consistent_with_safe_defaults(self):
         text = (Path(__file__).parents[1]/'plugin.yaml').read_text(encoding='utf-8')
-        self.assertIn('version: 0.2.0-rc.2', text)
+        self.assertIn('version: 0.2.0-rc.3', text)
         self.assertIn('allow_open_page:', text)
         self.assertIn('allow_new_tab:', text)
         example = json.loads((Path(__file__).parents[1]/'connector.example.json').read_text(encoding='utf-8'))

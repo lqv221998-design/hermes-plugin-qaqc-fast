@@ -12,7 +12,7 @@ def properties(modules):
               'url':{**text(4096),'description':'Exact user-selected HTTPS QAQC URL; never rewrite route parameters or infer project.'},
               'mode':{'type':'string','enum':['new','reuse']},
               'page_id':{'type':'integer','minimum':0,'description':'Observed native QAQC page ID, never assume 1.'},
-              'expected_project':{**text(200),'description':'Exact requested header project. No silent fallback.'},
+              'expected_project':{**text(200),'description':'Optional explicit target assertion. Omit to observe the project on the selected page automatically; required only as destination intent for project switching.'},
               'expected_discipline':{'type':'string','enum':['XÂY DỰNG','CƠ ĐIỆN']},
               'module':{'type':'string','enum':list(modules)},
               'menu_path':{'type':'array','items':text(),'minItems':1,'maxItems':6},

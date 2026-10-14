@@ -28,7 +28,7 @@ def pages(text):
 
 
 def run_open(ctx, args, **kwargs):
-    from . import Stop, _LOCK, user_binding, describe, top_page_nodes
+    from . import Stop, _LOCK, user_binding, context_policy, describe, top_page_nodes
     if isinstance(args,dict) and args.get('action')=='open_page_status':
         return run_status(ctx,args,**kwargs)
     session, record, key, acquired = None, None, None, False
@@ -41,7 +41,7 @@ def run_open(ctx, args, **kwargs):
         if not bootstrap:
             url = source_url(url)
         user_binding(ctx)
-        if not bootstrap and (not isinstance(args.get('expected_project'), str) or not args['expected_project'].strip()):
+        if not bootstrap and context_policy(ctx)=='manual' and (not isinstance(args.get('expected_project'), str) or not args['expected_project'].strip()):
             raise Stop('pending_project_selection')
         if ctx.get_config('allow_open_page', default=False) is not True:
             raise Stop('page_open_not_authorized')
@@ -65,7 +65,7 @@ def run_open(ctx, args, **kwargs):
         key = 'page_open_'+hashlib.sha256(op.encode()).hexdigest()
         if ctx.state.get(key) is not None:
             raise Stop('operation_id_already_used_no_replay')
-        session = Session(ctx, {**args, 'expected_project':args.get('expected_project') or 'Bootstrap-only-not-project-verified',
+        session = Session(ctx, {**args, 'expected_project':args.get('expected_project') if not bootstrap or context_policy(ctx)=='auto' else 'Bootstrap-only-not-project-verified',
                                'page_id': 0 if mode=='new' else args.get('page_id')}, kwargs)
         acquired = _LOCK.acquire(blocking=False)
         if not acquired:
@@ -121,6 +121,7 @@ def run_open(ctx, args, **kwargs):
         heading = args.get('destination_heading')
         if heading is not None and (not isinstance(heading, str) or not heading or not any(n['name']==heading and n['role'] in ('heading','StaticText') for n in top_page_nodes(nodes))):
             raise Stop('destination_not_verified')
+        record.update(project=session.project,user=session.user)
         record['status'] = 'verified'
         ctx.state.set(key, record)
         ctx.state.set('page_open_active', record)
@@ -160,15 +161,16 @@ def run_status(ctx,args,**kwargs):
         key = 'page_open_'+hashlib.sha256(op.encode()).hexdigest()
         record = ctx.state.get(key)
         user = user_binding(ctx)
-        if not isinstance(record,dict) or record.get('user')!=user:
+        if not isinstance(record,dict) or record.get('session_id')!=kwargs.get('session_id') or (user is not None and record.get('user')!=user):
             raise Stop('page_open_scope_mismatch')
         bootstrap = record['url']=='https://qaqc.newtecons.vn/'
-        if not bootstrap and record.get('project')!=args.get('expected_project'):
+        if not bootstrap and args.get('expected_project') is not None and record.get('project')!=args.get('expected_project'):
             raise Stop('page_open_scope_mismatch')
         if args.get('expected_discipline') is not None and args['expected_discipline']!=record.get('expected_discipline'):
             raise Stop('page_open_scope_mismatch')
-        session = Session(ctx,{**args,'page_id':record.get('page_id',0),
+        session = Session(ctx,{**args,'expected_project':record.get('project'),'page_id':record.get('page_id',0),
                                'expected_discipline':record.get('expected_discipline')},kwargs)
+        session.user = record.get('user') or user
         acquired = _LOCK.acquire(blocking=False)
         if not acquired:
             raise Stop('controller_busy')
@@ -185,6 +187,7 @@ def run_status(ctx,args,**kwargs):
         heading = record.get('destination_heading')
         if heading is not None and not any(n['name']==heading and n['role'] in ('heading','StaticText') for n in top_page_nodes(nodes)):
             raise Stop('destination_not_verified')
+        record.update(project=session.project,user=session.user)
         record['status'] = 'verified'
         ctx.state.set(key,record)
         active = ctx.state.get('page_open_active')

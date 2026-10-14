@@ -37,7 +37,7 @@
           "mcp_server": "chrome_qaqc",
           "allow_open_page": false,
           "allow_new_tab": false,
-          "expected_user_display_name": "",
+          "context_policy": "auto",
           "write_project": "",
           "workflow_transitions": [],
           "allow_restore_browser": false,
